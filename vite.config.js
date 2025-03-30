@@ -10,9 +10,9 @@ export default defineConfig({
     {
       name: 'move-and-fix-html-files',
       closeBundle() {
-        // 빌드 후 HTML 파일을 올바른 위치로 옮기고 스크립트 참조를 수정하는 훅
+        // Hook to move HTML files to the correct location and fix script references after build
         try {
-          // 디렉토리 확인 및 생성
+          // Check and create directories
           if (!existsSync('dist/popup')) {
             mkdirSync('dist/popup', { recursive: true });
           }
@@ -20,24 +20,24 @@ export default defineConfig({
             mkdirSync('dist/newtab', { recursive: true });
           }
           
-          // 팝업 HTML 수정 및 이동
+          // Modify and move popup HTML
           let popupHtml = readFileSync('dist/src/popup/popup.html', 'utf8');
           popupHtml = popupHtml.replace(/src="\.\.\/\.\.\//g, 'src="../');
           popupHtml = popupHtml.replace(/href="\.\.\/\.\.\//g, 'href="../');
           writeFileSync('dist/popup/popup.html', popupHtml);
           
-          // 새 탭 HTML 수정 및 이동
+          // Modify and move new tab HTML
           let newtabHtml = readFileSync('dist/src/newtab/index.html', 'utf8');
           newtabHtml = newtabHtml.replace(/src="\.\.\/\.\.\//g, 'src="../');
           newtabHtml = newtabHtml.replace(/href="\.\.\/\.\.\//g, 'href="../');
           writeFileSync('dist/newtab/index.html', newtabHtml);
           
-          // 임시 src 폴더 삭제
+          // Delete temporary src folder
           rmSync('dist/src', { recursive: true, force: true });
           
-          console.log('HTML 파일이 성공적으로 이동 및 수정되었습니다!');
+          console.log('HTML files successfully moved and modified!');
         } catch (error) {
-          console.error('HTML 파일 처리 중 오류 발생:', error);
+          console.error('Error processing HTML files:', error);
         }
       }
     }
@@ -52,7 +52,7 @@ export default defineConfig({
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // 진입점 이름에 따라 폴더 경로 결정
+          // Determine folder path based on entry point name
           if (chunkInfo.name === 'popup') return 'popup/popup.js';
           if (chunkInfo.name === 'background') return 'background/background.js';
           if (chunkInfo.name === 'content') return 'content_scripts/content.js';
@@ -60,14 +60,14 @@ export default defineConfig({
           return '[name]/[name].js';
         },
         chunkFileNames: (chunkInfo) => {
-          // 공유 청크는 shared 폴더에 배치
+          // Place shared chunks in the shared folder
           return 'shared/[name]-[hash].js';
         },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.');
           const extType = info[info.length - 1];
 
-          // CSS 파일 처리
+          // Process CSS files
           if (extType === 'css') {
             if (assetInfo.name.includes('popup')) {
               return 'popup/popup.css';
@@ -81,7 +81,7 @@ export default defineConfig({
             return '[name][extname]';
           }
 
-          // 이미지 등 다른 에셋은 assets 폴더에 배치
+          // Place other assets like images in the assets folder
           return 'assets/[name][extname]';
         }
       }
@@ -92,9 +92,9 @@ export default defineConfig({
   server: {
     port: 3000,
     strictPort: true,
-    open: '/src/newtab/index.html', // 개발 서버 시작시 자동으로 새 탭 페이지 열기
+    open: '/src/newtab/index.html', // Automatically open new tab page when starting development server
     fs: {
-      // 로컬 파일 접근 허용
+      // Allow access to local files
       allow: ['..']
     }
   },
